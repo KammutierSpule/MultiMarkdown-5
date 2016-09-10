@@ -19,10 +19,17 @@
 
 /* begin_odf_output -- handle the initial prefix, if any */
 void begin_odf_output(GString *out, node* list, scratch_pad *scratch) {
+	node *temp_node;
 #ifdef DEBUG_ON
 	fprintf(stderr, "begin_odf_output\n");
 #endif	
-	print_odf_header(out);
+	
+	temp_node = metadata_for_key("odfrawheader", list);
+	if (temp_node != NULL) {
+		print_raw_node(out, temp_node->children);
+	} else {
+		print_odf_header(out);
+	}
 
 	if (list == NULL) {
 		g_string_append_printf(out, "<office:body>\n<office:text>\n");
@@ -273,6 +280,7 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 				if ((strcmp(temp, "fr") == 0) || (strcmp(temp, "french") == 0)) { scratch->language = FRENCH; } else 
 				if ((strcmp(temp, "sv") == 0) || (strcmp(temp, "swedish") == 0)) { scratch->language = SWEDISH; }
 			} else if (strcmp(temp, "lang") == 0) {
+			} else if (strcmp(temp, "odfrawheader") == 0) {
 			} else {
 				g_string_append_printf(out,"<meta:user-defined meta:name=\"");
 				print_odf_string(out, n->str);
