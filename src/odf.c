@@ -516,7 +516,10 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "create img\n");
 #endif
-			g_string_append_printf(out, "<draw:frame text:anchor-type=\"as-char\"\ndraw:z-index=\"0\" draw:style-name=\"fr1\" ");
+			if (n->key == IMAGEBLOCK) {
+				g_string_append_printf(out, "<draw:frame text:anchor-type=\"as-char\"\ndraw:z-index=\"0\" draw:style-name=\"fr1\" ");
+			}
+
 
 			if (n->link_data->attr != NULL) {
 				temp_node = node_for_attribute("height",n->link_data->attr);
@@ -526,23 +529,34 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 				if (temp_node != NULL)
 					width = correct_dimension_units(temp_node->children->str);
 			}
-			
-			if (width != NULL) {
-				g_string_append_printf(out, "svg:width=\"%s\"\n", width);
-			} else {
-				g_string_append_printf(out, "svg:width=\"95%%\"\n");
+
+			if (n->key == IMAGEBLOCK) {
+				if (width != NULL) {
+					g_string_append_printf(out, "svg:width=\"%s\"\n", width);
+				} else {
+					g_string_append_printf(out, "svg:width=\"95%%\"\n");
+				}
 			}
 			
-			g_string_append_printf(out, ">\n<draw:text-box><text:p><draw:frame text:anchor-type=\"as-char\" draw:z-index=\"1\" ");
+			if (n->key == IMAGEBLOCK) {
+				g_string_append_printf(out, ">\n<draw:text-box><text:p><draw:frame text:anchor-type=\"as-char\" draw:z-index=\"1\" ");
+			} else {
+				g_string_append_printf(out, "<draw:frame text:anchor-type=\"as-char\" draw:z-index=\"1\" draw:style-name=\"fr2\" ");
+			}
+
 			if ((height != NULL) && (width != NULL)) {
-				g_string_append_printf(out, "svg:height=\"%s\"\n",height);
-				g_string_append_printf(out, "svg:width=\"%s\"\n", width);
+				g_string_append_printf(out, "svg:height=\"%s\" ",height);
+				g_string_append_printf(out, "svg:width=\"%s\" ", width);
 			}
 			
 			if (n->link_data->source != NULL)
 				g_string_append_printf(out, "><draw:image xlink:href=\"%s\"",n->link_data->source);
 
-			g_string_append_printf(out," xlink:type=\"simple\" xlink:show=\"embed\" xlink:actuate=\"onLoad\" draw:filter-name=\"&lt;All formats&gt;\"/>\n</draw:frame></text:p>");
+			g_string_append_printf(out," xlink:type=\"simple\" xlink:show=\"embed\" xlink:actuate=\"onLoad\" draw:filter-name=\"&lt;All formats&gt;\"/>\n</draw:frame>");
+
+			if (n->key == IMAGEBLOCK) {
+				g_string_append_printf(out,"</text:p>");
+			}
 
 			if (n->key == IMAGEBLOCK) {
 				if (n->children != NULL) {
@@ -556,8 +570,6 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 					g_string_free(temp_str, true);
 				}
 				g_string_append_printf(out, "</draw:text-box></draw:frame>\n</text:p>\n");
-			} else {
-				g_string_append_printf(out, "</draw:text-box></draw:frame>\n");
 			}
 			scratch->padded = 1;
 
@@ -1126,6 +1138,15 @@ void print_odf_header(GString *out){
 	"                             fo:padding=\"0in\"\n" \
 	"                             fo:border=\"none\"\n" \
 	"                             style:shadow=\"none\"/>\n" \
+	"</style:style>\n" \
+    "<style:style style:name=\"fr2\" style:family=\"graphic\" style:parent-style-name=\"Graphics\">\n" \
+	"   <style:graphic-properties style:print-content=\"true\" style:vertical-pos=\"top\"\n" \
+	"                             style:vertical-rel=\"baseline\"\n" \
+	"                             fo:padding=\"0in\"\n" \
+	"                             fo:border=\"none\"\n" \
+	"                             style:shadow=\"none\"\n" \
+	"                             fo:clip=\"rect(0cm, 0cm, 0cm, 0cm)\"\n" \
+	"                             style:horizontal-pos=\"center\" style:horizontal-rel=\"paragraph\"/>\n" \
 	"</style:style>\n" \
     "<style:style style:name=\"P1\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"\n" \
     "             style:list-style-name=\"L1\"/>\n" \
