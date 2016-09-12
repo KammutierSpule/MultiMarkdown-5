@@ -3,6 +3,7 @@
 * odf raw header: {{add an raw filename with no empty newline spaces to the output header of fodt}}
 * odf, do not add text-box on images without label (fixes an issue displaying inline images)
 * odf, fix an issue that was not displaying the images while printing / pdf export.
+* odf, implement capability to add (raw odf) attributes to odf images (as in HTML)
 
 ## About ##
 
