@@ -463,6 +463,8 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 			break;
 		case ATTRKEY:
 			if ( (strcmp(n->str,"height") == 0) || (strcmp(n->str, "width") == 0)) {
+			} else {
+				g_string_append_printf(out, "%s=\"%s\" ", n->str, n->children->str);
 			}
 			break;
 		case REFNAME:
@@ -517,7 +519,16 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 	fprintf(stderr, "create img\n");
 #endif
 			if (n->key == IMAGEBLOCK) {
-				g_string_append_printf(out, "<draw:frame text:anchor-type=\"as-char\"\ndraw:z-index=\"0\" draw:style-name=\"fr1\" ");
+				g_string_append_printf(out, "<draw:frame ");
+
+				if (node_for_attribute("draw:z-index",n->link_data->attr) == NULL)			
+					g_string_append_printf(out, "draw:z-index=\"0\" ");
+
+				if (node_for_attribute("text:anchor-type",n->link_data->attr) == NULL)
+					g_string_append_printf(out, "text:anchor-type=\"as-char\" ");
+
+				if (node_for_attribute("draw:style-name",n->link_data->attr) == NULL)
+					g_string_append_printf(out, "draw:style-name=\"fr1\" ");
 			}
 
 
@@ -539,9 +550,27 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 			}
 			
 			if (n->key == IMAGEBLOCK) {
-				g_string_append_printf(out, ">\n<draw:text-box><text:p><draw:frame text:anchor-type=\"as-char\" draw:z-index=\"1\" ");
+				g_string_append_printf(out, ">\n<draw:text-box><text:p><draw:frame draw:z-index=\"1\" text:anchor-type=\"as-char\" ");
 			} else {
-				g_string_append_printf(out, "<draw:frame text:anchor-type=\"as-char\" draw:z-index=\"1\" draw:style-name=\"fr2\" ");
+				g_string_append_printf(out, "<draw:frame ");
+			}
+
+			// Now add attributes.
+			// If they were manually added, it will add latter while
+			// processing ATTRKEY
+
+			if (n->key != IMAGEBLOCK) {
+
+				if (node_for_attribute("draw:z-index",n->link_data->attr) == NULL)			
+					g_string_append_printf(out, "draw:z-index=\"1\" ");
+
+				if (node_for_attribute("text:anchor-type",n->link_data->attr) == NULL)
+					g_string_append_printf(out, "text:anchor-type=\"as-char\" ");
+
+				if (node_for_attribute("draw:style-name",n->link_data->attr) == NULL)
+					g_string_append_printf(out, "draw:style-name=\"fr2\" ");
+
+				print_odf_node_tree(out, n->link_data->attr, scratch);
 			}
 
 			if ((height != NULL) && (width != NULL)) {

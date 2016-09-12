@@ -678,7 +678,7 @@ Attribute = Spnl a:AttrKey '=' b:AttrValue
 		$$->children = b;
 	}
 
-AttrKey = < AlphanumericAscii+ >
+AttrKey = < (AlphanumericAscii | '-' | '_' | ':')+ >
 	{
 		char *lab;
 		lab = label_from_string(yytext);
