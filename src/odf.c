@@ -119,10 +119,10 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 					g_string_append_printf(out, " text:style-name=\"Preformatted Text\"");
 					break;
 				case ORDEREDLIST:
-					g_string_append_printf(out, " text:style-name=\"P2\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-ORDERED-LIST\"");
 					break;
 				case BULLETLIST:
-					g_string_append_printf(out, " text:style-name=\"P1\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-BULLET-LIST\"");
 					break;
 				case NOTEREFERENCE:
 				case NOTESOURCE:
@@ -177,10 +177,10 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 			pad(out, 2, scratch);
 			switch (n->key) {
 				case BULLETLIST:
-					g_string_append_printf(out, "<text:list text:style-name=\"L1\">");
+					g_string_append_printf(out, "<text:list text:style-name=\"MMD-L1\">");
 					break;
 				case ORDEREDLIST:
-					g_string_append_printf(out, "<text:list text:style-name=\"L2\">");
+					g_string_append_printf(out, "<text:list text:style-name=\"MMD-L2\">");
 					break;
 			}
 			scratch->padded = 1;
@@ -199,10 +199,10 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 			if ((n->children != NULL) && (n->children->children != NULL) && (n->children->children->key != PARA)) {
 				switch (scratch->odf_para_type) {
 					case BULLETLIST:
-						g_string_append_printf(out, "<text:p text:style-name=\"P1\">");
+						g_string_append_printf(out, "<text:p text:style-name=\"MMD-BULLET-LIST\">");
 						break;
 					case ORDEREDLIST:
-						g_string_append_printf(out, "<text:p text:style-name=\"P2\">");
+						g_string_append_printf(out, "<text:p text:style-name=\"MMD-ORDERED-LIST\">");
 						break;
 				}
 				scratch->odf_list_needs_end_p = true;
@@ -212,10 +212,10 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 				/* This is an empty list item.  ODF apparently requires something for the empty item to appear */
 				switch (scratch->odf_para_type) {
 					case BULLETLIST:
-						g_string_append_printf(out, "<text:p text:style-name=\"P1\"/>");
+						g_string_append_printf(out, "<text:p text:style-name=\"MMD-BULLET-LIST\"/>");
 						break;
 					case ORDEREDLIST:
-						g_string_append_printf(out, "<text:p text:style-name=\"P2\"/>");
+						g_string_append_printf(out, "<text:p text:style-name=\"MMD-ORDERED-LIST\"/>");
 						break;
 				}
 			}
@@ -528,7 +528,7 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 					g_string_append_printf(out, "text:anchor-type=\"as-char\" ");
 
 				if (node_for_attribute("draw:style-name",n->link_data->attr) == NULL)
-					g_string_append_printf(out, "draw:style-name=\"fr1\" ");
+					g_string_append_printf(out, "draw:style-name=\"MMD-Frame\" ");
 			}
 
 
@@ -568,7 +568,7 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 					g_string_append_printf(out, "text:anchor-type=\"as-char\" ");
 
 				if (node_for_attribute("draw:style-name",n->link_data->attr) == NULL)
-					g_string_append_printf(out, "draw:style-name=\"fr2\" ");
+					g_string_append_printf(out, "draw:style-name=\"MMD-Image-HCenter-VTop\" ");
 
 				print_odf_node_tree(out, n->link_data->attr, scratch);
 			}
@@ -785,7 +785,7 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 			break;
 		case TABLE:
 			pad(out,2, scratch);
-			g_string_append_printf(out, "<table:table>\n");
+			g_string_append_printf(out, "<table:table table:style-name=\"MMD-Table\">\n");
 			print_odf_node_tree(out, n->children, scratch);
 			g_string_append_printf(out, "</table:table>\n");
 			/* caption if present */
@@ -843,15 +843,15 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 				g_string_append_printf(out, " text:style-name=\"Table_20_Heading\"");
 			} else {
 				if ( strncmp(&temp[lev],"r",1) == 0) {
-					g_string_append_printf(out, " text:style-name=\"MMD-Table-Right\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-Table-Text-Right\"");
 				} else if ( strncmp(&temp[lev],"R",1) == 0) {
-					g_string_append_printf(out, " text:style-name=\"MMD-Table-Right\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-Table-Text-Right\"");
 				} else if ( strncmp(&temp[lev],"c",1) == 0) {
-					g_string_append_printf(out, " text:style-name=\"MMD-Table-Center\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-Table-Text-Center\"");
 				} else if ( strncmp(&temp[lev],"C",1) == 0) {
-					g_string_append_printf(out, " text:style-name=\"MMD-Table-Center\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-Table-Text-Center\"");
 				} else {
-					g_string_append_printf(out, " text:style-name=\"MMD-Table\"");
+					g_string_append_printf(out, " text:style-name=\"MMD-Table-Text-Left\"");
 				}
 			}
 
@@ -1060,6 +1060,9 @@ void print_odf_header(GString *out){
     
     /* Append basic style information */
     g_string_append_printf(out, "<office:styles>\n" \
+  	"<style:default-style style:family=\"table\">\n" \
+   	"<style:table-properties table:border-model=\"collapsing\"/>\n" \
+  	"</style:default-style>\n" \
     "<style:style style:name=\"Standard\" style:family=\"paragraph\" style:class=\"text\">\n" \
     "      <style:paragraph-properties fo:margin-top=\"0in\" fo:margin-bottom=\"0.15in\"" \
     "     fo:text-align=\"justify\" style:justify-single-word=\"false\"/>\n" \
@@ -1148,28 +1151,31 @@ void print_odf_header(GString *out){
     "   <style:style style:name=\"MMD-Subscript\" style:family=\"text\">\n" \
     "      <style:text-properties style:text-position=\"sub 58%%\"/>\n" \
     "   </style:style>\n" \
-    "<style:style style:name=\"MMD-Table\" style:family=\"paragraph\" style:parent-style-name=\"Standard\">\n" \
-    "   <style:paragraph-properties fo:margin-top=\"0in\" fo:margin-bottom=\"0.05in\"/>\n" \
+    "<style:style style:name=\"MMD-Table-Text-Left\" style:family=\"paragraph\" style:parent-style-name=\"Standard\">\n" \
+    "   <style:paragraph-properties fo:text-align=\"left\" fo:margin-top=\"0in\" fo:margin-bottom=\"0.05in\"/>\n" \
     "</style:style>\n" \
-    "<style:style style:name=\"MMD-Table-Center\" style:family=\"paragraph\" style:parent-style-name=\"MMD-Table\">\n" \
+    "<style:style style:name=\"MMD-Table-Text-Center\" style:family=\"paragraph\" style:parent-style-name=\"MMD-Table-Text\">\n" \
     "   <style:paragraph-properties fo:text-align=\"center\" style:justify-single-word=\"false\"/>\n" \
     "</style:style>\n" \
-    "<style:style style:name=\"MMD-Table-Right\" style:family=\"paragraph\" style:parent-style-name=\"MMD-Table\">\n" \
+    "<style:style style:name=\"MMD-Table-Text-Right\" style:family=\"paragraph\" style:parent-style-name=\"MMD-Table-Text\">\n" \
     "   <style:paragraph-properties fo:text-align=\"right\" style:justify-single-word=\"false\"/>\n" \
     "</style:style>\n" \
-    "<style:style style:name=\"P2\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"\n" \
-    "             style:list-style-name=\"L2\">\n" \
+  	"<style:style style:name=\"MMD-Table\" style:family=\"table\">\n" \
+   	"   <style:table-properties style:rel-width=\"100%%\" table:align=\"center\"/>\n" \
+  	"</style:style>\n" \
+    "<style:style style:name=\"MMD-ORDERED-LIST\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"\n" \
+    "             style:list-style-name=\"MMD-L2\">\n" \
     "<style:paragraph-properties fo:text-align=\"start\" style:justify-single-word=\"false\"/>\n" \
     "</style:style>\n" \
-	"<style:style style:name=\"fr1\" style:family=\"graphic\" style:parent-style-name=\"Frame\">\n" \
+	"<style:style style:name=\"MMD-Frame\" style:family=\"graphic\" style:parent-style-name=\"Frame\">\n" \
 	"   <style:graphic-properties style:print-content=\"true\" style:vertical-pos=\"top\"\n" \
 	"                             style:vertical-rel=\"baseline\"\n" \
 	"                             fo:padding=\"0in\"\n" \
 	"                             fo:border=\"none\"\n" \
 	"                             style:shadow=\"none\"/>\n" \
 	"</style:style>\n" \
-    "<style:style style:name=\"fr2\" style:family=\"graphic\" style:parent-style-name=\"Graphics\">\n" \
-	"   <style:graphic-properties style:print-content=\"true\" style:vertical-pos=\"top\"\n" \
+    "<style:style style:name=\"MMD-Image-HCenter-VTop\" style:family=\"graphic\" style:parent-style-name=\"Graphics\">\n" \
+	"   <style:graphic-properties style:print-content=\"true\" style:vertical-pos=\"Top\"\n" \
 	"                             style:vertical-rel=\"baseline\"\n" \
 	"                             fo:padding=\"0in\"\n" \
 	"                             fo:border=\"none\"\n" \
@@ -1177,9 +1183,9 @@ void print_odf_header(GString *out){
 	"                             fo:clip=\"rect(0cm, 0cm, 0cm, 0cm)\"\n" \
 	"                             style:horizontal-pos=\"center\" style:horizontal-rel=\"paragraph\"/>\n" \
 	"</style:style>\n" \
-    "<style:style style:name=\"P1\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"\n" \
-    "             style:list-style-name=\"L1\"/>\n" \
-	"<text:list-style style:name=\"L1\">\n" \
+    "<style:style style:name=\"MMD-BULLET-LIST\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"\n" \
+    "             style:list-style-name=\"MMD-L1\"/>\n" \
+	"<text:list-style style:name=\"MMD-L1\">\n" \
 	"	<text:list-level-style-bullet text:level=\"1\" text:style-name=\"Numbering_20_Symbols\" style:num-suffix=\".\" text:bullet-char=\"\">\n" \
 	"		<style:list-level-properties text:list-level-position-and-space-mode=\"label-alignment\">\n" \
 	"			<style:list-level-label-alignment text:label-followed-by=\"listtab\" text:list-tab-stop-position=\"0.5in\" fo:text-indent=\"-0.25in\" fo:margin-left=\"0.5in\"/>\n" \
@@ -1234,7 +1240,7 @@ void print_odf_header(GString *out){
 	"		</style:list-level-properties>\n" \
 	"	</text:list-level-style-number>\n" \
 	"</text:list-style>\n" \
-	"<text:list-style style:name=\"L2\">\n" \
+	"<text:list-style style:name=\"MMD-L2\">\n" \
 	"	<text:list-level-style-number text:level=\"1\" text:style-name=\"Standard\" style:num-suffix=\".\" style:num-format=\"1\">\n" \
 	"		<style:list-level-properties text:list-level-position-and-space-mode=\"label-alignment\">\n" \
 	"			<style:list-level-label-alignment text:label-followed-by=\"listtab\" text:list-tab-stop-position=\"0.5in\" fo:text-indent=\"-0.25in\" fo:margin-left=\"0.5in\"/>\n" \
