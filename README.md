@@ -4,6 +4,7 @@
 * odf, do not add text-box on images without label (fixes an issue displaying inline images)
 * odf, fix an issue that was not displaying the images while printing / pdf export.
 * odf, implement capability to add (raw odf) attributes to odf images (as in HTML)
+* odf, Implement meta odfrawbodystart and odfrawbodyend for adding RAW body start and body end data.
 
 ## About ##
 
