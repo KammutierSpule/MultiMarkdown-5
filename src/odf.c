@@ -17,6 +17,18 @@
 
 #include "odf.h"
 
+/* begin_odf_body -- check for a metadata key "odf raw bodystart" */
+void begin_odf_body(GString *out, node* list, scratch_pad *scratch) {
+	node *temp_node;
+	
+	temp_node = metadata_for_key("odfrawbodystart", list);
+	if (temp_node != NULL) {
+		print_raw_node(out, temp_node->children);
+	} else {
+		g_string_append_printf(out, "<office:body>\n<office:text>\n");
+	}
+}
+
 /* begin_odf_output -- handle the initial prefix, if any */
 void begin_odf_output(GString *out, node* list, scratch_pad *scratch) {
 	node *temp_node;
@@ -38,10 +50,17 @@ void begin_odf_output(GString *out, node* list, scratch_pad *scratch) {
 
 /* end_odf_output -- close the document */
 void end_odf_output(GString *out, node* list, scratch_pad *scratch) {
+	node *temp_node;
 #ifdef DEBUG_ON
 	fprintf(stderr, "end_odf_output\n");
 #endif
-	print_odf_footer(out);
+
+	temp_node = metadata_for_key("odfrawbodyend", list);
+	if (temp_node != NULL) {
+		print_raw_node(out, temp_node->children);
+	} else {
+		print_odf_footer(out);
+	}
 }
 
 /* print_odf_node_tree -- convert node tree to LaTeX */
@@ -79,7 +98,7 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 		we need to close <head> */
 	if (!(scratch->extensions & EXT_HEAD_CLOSED) && 
 		!((n->key == FOOTER) || (n->key == METADATA))) {
-			g_string_append_printf(out, "<office:body>\n<office:text>\n");
+			begin_odf_body(out,n,scratch);
 			scratch->extensions = scratch->extensions | EXT_HEAD_CLOSED;
 		}
 	
@@ -245,7 +264,7 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 			if (temp_node != NULL) {
 				print_raw_node(out, temp_node->children);
 			}
-			g_string_append_printf(out, "<office:body>\n<office:text>\n");
+			begin_odf_body(out,n,scratch);
 			break;
 		case METAKEY:
 			temp = label_from_string(n->str);
@@ -281,6 +300,8 @@ void print_odf_node(GString *out, node *n, scratch_pad *scratch) {
 				if ((strcmp(temp, "sv") == 0) || (strcmp(temp, "swedish") == 0)) { scratch->language = SWEDISH; }
 			} else if (strcmp(temp, "lang") == 0) {
 			} else if (strcmp(temp, "odfrawheader") == 0) {
+			} else if (strcmp(temp, "odfrawbodystart") == 0) {
+			} else if (strcmp(temp, "odfrawbodyend") == 0) {
 			} else {
 				g_string_append_printf(out,"<meta:user-defined meta:name=\"");
 				print_odf_string(out, n->str);
